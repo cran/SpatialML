@@ -1,0 +1,11 @@
+1fc7b652f0404df9b42f790b9b3ba27a *DESCRIPTION
+e7b7a45c1a11791d4f7efaa089637825 *NAMESPACE
+71884c065333fab4d7d8f94b24b855fe *R/grf.R
+3b526590aa1b4b1eebd975eb5c35936d *R/predict.grf.R
+f7127bd35d6fb7a886c8ba5fdc31942f *R/random.test.data.R
+58731a784e7721a6410fcf9a6b9ffac9 *data/Income.rdata
+3fe4fb93b20dc0f99db4a04b7fda15e6 *data/datalist
+8608bb4c36a4f83173e743cb002775d9 *man/Income.Rd
+44aab9a44c7d06f23b42b383a6e12ba8 *man/grf.Rd
+05394b52d5f1aea88f0351beaf235766 *man/predict.grf.Rd
+92b32fc08d4b2215d6e63fcd75c537f2 *man/random.test.data.Rd

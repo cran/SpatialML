@@ -1,0 +1,4 @@
+exportPattern("^[[:alpha:]]+")
+importFrom("randomForest", randomForest)
+importFrom("stats", "dist", "predict", "sd", "setNames", "terms", "rpois", "runif")
+S3method(predict, grf)
