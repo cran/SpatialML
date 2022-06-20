@@ -1,4 +1,5 @@
 exportPattern("^[[:alpha:]]+")
-importFrom("randomForest", randomForest)
+importFrom("ranger", ranger)
+importFrom("caret", postResample, trainControl, train)
 importFrom("stats", "dist", "predict", "sd", "setNames", "terms", "rpois", "runif")
 S3method(predict, grf)

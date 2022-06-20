@@ -1,12 +1,13 @@
 \name{grf}
 \alias{grf}
-\title{Geographical Random Forest}
-\description{This function refers to a geographical (local) version of the popular Random Forest algorithm.}
+\title{Geographically Weighted Random Forest}
+\description{This function refers to a local version of the popular Random Forest algorithm.}
 \usage{grf(formula, dframe, bw, kernel, coords, ntree=500, mtry=NULL,
-           importance=TRUE, forests = TRUE)}
+           importance="impurity", nthreads = NULL, forests = TRUE,
+           weighted = TRUE, print.results=TRUE, ...)}
 \arguments{
 
-  \item{formula}{the local model to be fitted using the same syntax used in the \code{randomForest} function of the R package \code{\link{randomForest}}. This is a string that is passed to the sub-models' \code{randomForest} function. For more details look at the class \code{\link{formula}}.}
+  \item{formula}{the local model to be fitted using the same syntax used in the \code{ranger} function of the R package \code{\link{ranger}}. This is a string that is passed to the sub-models' \code{ranger} function. For more details look at the class \code{\link{formula}}.}
 
   \item{dframe}{a numeric data frame of at least two suitable variables (one dependent and one independent)}
 
@@ -20,32 +21,41 @@
 
   \item{mtry}{Number of variables randomly sampled as candidates at each split. Note that the default values is p/3, where p is number of variables in the formula}
 
-  \item{importance}{Feature importance of the dependent variables used as input at the random forest. The measures used are the Mean Increase in Mean Squared Error (incMSE) if a predictor would be randomly permuted or the decrease in node impurities (IncNodePurity) from splitting on the variable, averaged over all trees. Both measures are derived from the Out of Bag (OOB) error.}
+  \item{importance}{Feature importance of the dependent variables used as input at the random forest. Default value is "impurity" which refers to the Gini index for classification and the variance of the responses for regression.}
+
+  \item{nthreads}{Number of threads. Default is number of CPUs available. The argument passes to both rnager and predict functions.}
 
   \item{forests}{a option to save and export (TRUE) or not (FALSE) all the local forests}
 
+  \item{weighted}{if TRUE the algorithm calculates Geographically Weighted Random Forest using the case.weights option of the packare ranger. If FALSE it will calculate local random forests without weighting each observation in the local data set.}
+
+  \item{print.results}{a option to print in the console (TRUE) or not (FALSE) the summary of the analysis}
+
+  \item{...}{further arguments passed to the ranger function}
+
 }
 \details{
-Geographical Random Forest (GRF) is a spatial analysis method using a local version of the famous Machine Learning algorithm. It allows for the investigation of the existence of spatial non-stationarity, in the relationship between a dependent and a set of independent variables. The latter is possible by fitting a sub-model for each observation in space, taking into account the neighbouring observations. This technique adopts the idea of the Geographically Weighted Regression, Kalogirou (2003). The main difference between a tradition (linear) GWR and GRF is that we can model non-stationarity coupled with a flexible non-linear model which is very hard to overfit due to its bootstrapping nature, thus relaxing the assumptions of traditional Gaussian statistics. Essential it was designed to be a bridge between machine learning and geographical models, combining inferential and explanatory power. Additionally, it is suited for datasets with numerous predictors, due to the robust nature of the random forest algorithm in high dimensionality. }
+Geographically Weighted Random Forest (GRF) is a spatial analysis method using a local version of the famous Machine Learning algorithm. It allows for the investigation of the existence of spatial non-stationarity, in the relationship between a dependent and a set of independent variables. The latter is possible by fitting a sub-model for each observation in space, taking into account the neighbouring observations. This technique adopts the idea of the Geographically Weighted Regression, Kalogirou (2003). The main difference between a tradition (linear) GWR and GRF is that we can model non-stationarity coupled with a flexible non-linear model which is very hard to overfit due to its bootstrapping nature, thus relaxing the assumptions of traditional Gaussian statistics. Essentially, it was designed to be a bridge between machine learning and geographical models, combining inferential and explanatory power. Additionally, it is suited for datasets with numerous predictors, due to the robust nature of the random forest algorithm in high dimensionality. }
 
 
 \value{
+   \item{Global.Model}{A ranger object of the global random forest model}
+
    \item{Locations}{a numeric matrix or data frame of two columns giving the X,Y coordinates of the observations}
 
-   \item{Local.Pc.IncMSE}{a numeric data frame with the local feature importance (IncMSE) for each predictor in each local random forest model}
+   \item{Local.Variable.Importance}{a numeric data frame with the local feature importance for each predictor in each local random forest model}
 
-   \item{Local.IncNodePurity}{a numeric data frame with the local IncNodePurity for each predictor in each local random forest model}
-
-   \item{LGofFit}{a numeric data frame with residuals and local goodness of fit statistics (training and OOB).}
+   \item{LGofFit}{a numeric data frame with residuals and local goodness of fit statistics.}
 
   \item{Forests}{all local forests.}
 
-  \item{lModelSummary}{Local Model Summary and goodness of fit statistics (training and OOB).}
+  \item{lModelSummary}{Local Model Summary and goodness of fit statistics.}
 }
 
 
 
-\references{Stefanos Georganos, Tais Grippa, Assane Niang Gadiaga, Catherine Linard, Moritz Lennert, Sabine Vanhuysse, Nicholus Odhiambo Mboga, Eléonore Wolff & Stamatis Kalogirou (2019) Geographical Random Forests: A Spatial Extension of the Random Forest Algorithm to Address Spatial Heterogeneity in Remote Sensing and Population Modelling, Geocarto International, DOI: 10.1080/10106049.2019.1595177}
+\references{Stefanos Georganos, Tais Grippa, Assane Niang Gadiaga, Catherine Linard, Moritz Lennert, Sabine Vanhuysse, Nicholus Odhiambo Mboga, Eléonore Wolff & Stamatis Kalogirou (2019) Geographical Random Forests: A Spatial Extension of the Random Forest Algorithm to Address Spatial Heterogeneity in Remote Sensing and Population Modelling, Geocarto International,
+DOI: 10.1080/10106049.2019.1595177}
 
 \author{Stamatis Kalogirou <stamatis@lctools.science>, Stefanos Georganos <sgeorgan@ulb.ac.be>}
 
@@ -60,7 +70,7 @@ This function is under development. There should be improvements in future versi
 }
 
 \examples{
-  \dontshow{
+  \dontrun{
       RDF <- random.test.data(10,10,3)
       Coords<-RDF[ ,4:5]
       grf <- grf(dep ~ X1 + X2, dframe=RDF, bw=10,

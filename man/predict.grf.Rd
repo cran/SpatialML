@@ -12,14 +12,14 @@
   \item{y.var.name}{the name of the variable with Y coordinates.}
   \item{local.w}{weight of the local model predictor allowing semi-local predictions. Default value is 1.}
   \item{global.w}{weight of the global model predictor allowing semi-local predictions. Default value is 0.}
-  \item{...}{for other arguments of the generic predict functions. Not used currently.}}
-
+  \item{...}{for other arguments passed to the generic predict functions. For example you may pass here the number of threats}}
 \details{A Geographical Random Forest prediction on unknown data. The nearest local random forest model in coordinate space is used to predict in each unknown y-variable location.
 }
 
 \value{vector of predicted values}
 
-\references{Stefanos Georganos, Tais Grippa, Assane Niang Gadiaga, Catherine Linard, Moritz Lennert, Sabine Vanhuysse, Nicholus Odhiambo Mboga, Eléonore Wolff & Stamatis Kalogirou (2019) Geographical Random Forests: A Spatial Extension of the Random Forest Algorithm to Address Spatial Heterogeneity in Remote Sensing and Population Modelling, Geocarto International, DOI: 10.1080/10106049.2019.1595177}
+\references{Stefanos Georganos, Tais Grippa, Assane Niang Gadiaga, Catherine Linard, Moritz Lennert, Sabine Vanhuysse, Nicholus Odhiambo Mboga, Eléonore Wolff & Stamatis Kalogirou (2019) Geographical Random Forests: A Spatial Extension of the Random Forest Algorithm to Address Spatial Heterogeneity in Remote Sensing and Population Modelling, Geocarto International,
+DOI: 10.1080/10106049.2019.1595177}
 
 \author{Stamatis Kalogirou <stamatis@lctools.science>, Stefanos Georganos <sgeorgan@ulb.ac.be>}
 
@@ -30,7 +30,7 @@
 }
 
 \examples{
-  \dontshow{
+  \dontrun{
       RDF <- random.test.data(10,10,3)
       Coords<-RDF[ ,4:5]
       grf <- grf(dep ~ X1 + X2, dframe=RDF, bw=10,

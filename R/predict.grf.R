@@ -1,5 +1,5 @@
 #object = local Forests
-predict.grf <- function(object, new.data, x.var.name, y.var.name, local.w=1, global.w=0,...) {
+predict.grf <- function(object, new.data, x.var.name, y.var.name, local.w=1, global.w=0, ...) {
 
   Obs <- nrow(new.data)
 
@@ -12,12 +12,15 @@ predict.grf <- function(object, new.data, x.var.name, y.var.name, local.w=1, glo
 
     locations <- object$Locations
 
-    D <- sqrt((x-locations$X)^2+(y-locations$Y)^2)
+    #D <- sqrt((x-locations$X)^2+(y-locations$Y)^2)
+    D <- sqrt((x-locations[,1])^2 + (y-locations[,2])^2)
 
     local.model.ID <- which.min(D)
 
-    g.prediction <- predict(object[[1]], new.data[i,])
-    l.prediction <- predict(object$Forests[[local.model.ID]], new.data[i,])
+    g.predict <- predict(object[[1]], new.data[i,], ...)
+    g.prediction <- g.predict$predictions
+    l.predict <- predict(object$Forests[[local.model.ID]], new.data[i,])
+    l.prediction <- l.predict$predictions
 
     predictions[i] <- global.w * g.prediction[1] + local.w * l.prediction[1]
   }
