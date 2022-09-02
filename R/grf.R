@@ -13,7 +13,7 @@ grf <- function(formula, dframe, bw, kernel, coords, ntree=500, mtry=NULL, impor
     Y <- Y.DF[[1]]
 
     ModelVarNo <- length(RNames)
-    K = ModelVarNo +1
+    K = ModelVarNo + 1
 
     ntrees <- ntree
 

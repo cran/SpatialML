@@ -1,4 +1,4 @@
-grf.bw <- function(formula, dataset, kernel="adaptive", coords, bw.min = NULL, bw.max = NULL, step = 1, trees=500, mtry=NULL, importance="impurity", nthreads = 6, forests = FALSE, weighted = TRUE, ...) {
+grf.bw <- function(formula, dataset, kernel="adaptive", coords, bw.min = NULL, bw.max = NULL, step = 1, trees=500, mtry=NULL, importance="impurity", nthreads = 1, forests = FALSE, weighted = TRUE, ...) {
 
   Obs <- nrow(dataset)
 
@@ -32,24 +32,21 @@ grf.bw <- function(formula, dataset, kernel="adaptive", coords, bw.min = NULL, b
 
     eval.bw.grf[count,2] <- grf16.a$LocalModelSummary$l.r.OOB
 
-    metrics_bw_grf <- postResample(pred = (grf16.a$LGofFit$LM_yfitOOB + grf16.a$Global.Model$predictions)/2, obs = Y)
+    message("Bandwidth: ", abw)
+    message("R2 of Local Model: ", eval.bw.grf[count,2])
 
+    metrics_bw_grf <- postResample(pred = (grf16.a$LGofFit$LM_yfitOOB + grf16.a$Global.Model$predictions)/2, obs = Y)
     eval.bw.grf[count,3] <- metrics_bw_grf[2]
 
-    message("Bandwidth: ", abw)
-    message("R2 of Mixed Model (Local and Global models fused): ", metrics_bw_grf[2])
-
     metrics_bw_grf <- postResample(pred = (grf16.a$LGofFit$LM_yfitOOB*0.25) +(grf16.a$Global.Model$predictions*0.75), obs = Y)
-
     eval.bw.grf[count,4] <- metrics_bw_grf[2]
 
     count <- count + 1
   }
 
+  best.bw <- eval.bw.grf$Bandwidth[which(eval.bw.grf$Local == max(eval.bw.grf$Local))]
 
-  best.bw <- eval.bw.grf$Bandwidth[which(eval.bw.grf$Mixed == max(eval.bw.grf$Mixed))]
-
-  message("Best Bandwidth (Based on the Mixed Model): ", best.bw)
+  message("Best Bandwidth (Based on the Local Model): ", best.bw)
 
   return(list(tested.bandwidths = eval.bw.grf, Best.BW = best.bw))
 }

@@ -1,17 +1,17 @@
 \name{grf.bw}
 \alias{grf.bw}
-\title{Geographically Weighted Random Forest best Bandwidth selection}
+\title{Geographically Weighted Random Forest optimal bandwidth selection}
 \description{This function finds the optimal bandwidth for the Geographically Weighted Random Forest algorithm using an exhaustive approach.}
 \usage{grf.bw(formula, dataset, kernel="adaptive", coords, bw.min = NULL,
               bw.max = NULL, step = 1, trees=500, mtry=NULL, importance="impurity",
-              nthreads = 6, forests = FALSE, weighted = TRUE, ...)}
+              nthreads = 1, forests = FALSE, weighted = TRUE, ...)}
 \arguments{
 
   \item{formula}{the local model to be fitted using the same syntax used in the \code{ranger} function of the R package \code{\link{ranger}}. This is a string that is passed to the sub-models' \code{ranger} function. For more details look at the class \code{\link{formula}}.}
 
-  \item{kernel}{the kernel to be used in the regression. Options are "adaptive" or "fixed".}
-
   \item{dataset}{a numeric data frame of at least two suitable variables (one dependent and one independent)}
+
+  \item{kernel}{the kernel to be used in the regression. Options are "adaptive" (default) or "fixed".}
 
   \item{coords}{a numeric matrix or data frame of two columns giving the X,Y coordinates of the observations}
 
@@ -39,17 +39,18 @@
 \details{
 Geographically Weighted Random Forest (GRF) is a spatial analysis method using a local version of the famous Machine Learning algorithm. It allows for the investigation of the existence of spatial non-stationarity, in the relationship between a dependent and a set of independent variables. The latter is possible by fitting a sub-model for each observation in space, taking into account the neighbouring observations. This technique adopts the idea of the Geographically Weighted Regression, Kalogirou (2003). The main difference between a tradition (linear) GWR and GRF is that we can model non-stationarity coupled with a flexible non-linear model which is very hard to over-fit due to its bootstrapping nature, thus relaxing the assumptions of traditional Gaussian statistics. Essentially, it was designed to be a bridge between machine learning and geographical models, combining inferential and explanatory power. Additionally, it is suited for datasets with numerous predictors, due to the robust nature of the random forest algorithm in high dimensionality.
 
-This function is a first attempt to find the optimal bandwidth for the grf. It uses an exhaustive approach, i.e. it tests sequential nearest neighbour bandwidths within a range and with a user defined step, and returns a list of goodness of fit statistics. It chooses the best bandwidth based on the maximum R2 value of the Mixed Model (Local and Global models fused). Future versions of this function will include heuristics methods to find the optimal bandwidth using algorithms such as optim.}
+This function is a first attempt to find the optimal bandwidth for the grf. It uses an exhaustive approach, i.e. it tests sequential nearest neighbour bandwidths within a range and with a user defined step, and returns a list of goodness of fit statistics. It chooses the best bandwidth based on the maximum R2 value of the local model. Future versions of this function will include heuristic methods to find the optimal bandwidth using algorithms such as optim.}
 
 
 \value{
    \item{tested.bandwidths}{A table with the tested bandwidths and the corresponding R2 of three model configurations: Local that refers to predictions based on the local (grf) model only; Mixed that refers to predictions that equally combine local (grf) and global (rf) model predictors; and Low.Local that refers to a prediction based on the combination of the local model predictors with a weight of 0.25 and the global model predictors with a weight of 0.75).}
 
-  \item{best.bw}{Best bandwidth based on the Mixed model predictions.}
+  \item{best.bw}{Best bandwidth based on the local model predictions.}
 }
 
-\references{Stefanos Georganos, Tais Grippa, Assane Niang Gadiaga, Catherine Linard, Moritz Lennert, Sabine Vanhuysse, Nicholus Odhiambo Mboga, Eléonore Wolff & Stamatis Kalogirou (2019) Geographical Random Forests: A Spatial Extension of the Random Forest Algorithm to Address Spatial Heterogeneity in Remote Sensing and Population Modelling, Geocarto International,
-DOI: 10.1080/10106049.2019.1595177}
+\references{Stefanos Georganos, Tais Grippa, Assane Niang Gadiaga, Catherine Linard, Moritz Lennert, Sabine Vanhuysse, Nicholus Odhiambo Mboga, Eléonore Wolff and Stamatis Kalogirou (2019) Geographical Random Forests: A Spatial Extension of the Random Forest Algorithm to Address Spatial Heterogeneity in Remote Sensing and Population Modelling, Geocarto International, DOI: 10.1080/10106049.2019.1595177
+
+Georganos, S. and Kalogirou, S. (2022) A Forest of Forests: A Spatially Weighted and Computationally Efficient Formulation of Geographical Random Forests. ISPRS, International Journal of Geo-Information, 2022, 11, 471. <https://www.mdpi.com/2220-9964/11/9/471>}
 
 \author{Stamatis Kalogirou <stamatis@lctools.science>, Stefanos Georganos <sgeorgan@ulb.ac.be>}
 
