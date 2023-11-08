@@ -1,4 +1,10 @@
-grf.bw <- function(formula, dataset, kernel="adaptive", coords, bw.min = NULL, bw.max = NULL, step = 1, trees=500, mtry=NULL, importance="impurity", nthreads = 1, forests = FALSE, weighted = TRUE, ...) {
+grf.bw <- function(formula, dataset, kernel="adaptive", coords, bw.min = NULL, bw.max = NULL, step = 1, trees=500, mtry=NULL, importance="impurity", nthreads = 1, forests = FALSE, geo.weighted = TRUE, ...) {
+
+
+  if (!is.data.frame(dataset)) {
+    stop("Error: input dataset must be a data frame")
+  }
+
 
   Obs <- nrow(dataset)
 
@@ -28,7 +34,7 @@ grf.bw <- function(formula, dataset, kernel="adaptive", coords, bw.min = NULL, b
 
     eval.bw.grf[count,1] <- abw
 
-    grf16.a <- eval(substitute(grf(formula, dframe=dataset, bw=abw, kernel, coords, ntree=trees, mtry = mtry, importance=importance, nthreads=nthreads, forests = FALSE, weighted = TRUE, print.results=FALSE, ...)))
+    grf16.a <- eval(substitute(grf(formula, dframe=dataset, bw=abw, kernel, coords, ntree=trees, mtry = mtry, importance=importance, nthreads=nthreads, forests = FALSE, geo.weighted = geo.weighted, print.results=FALSE, ...)))
 
     eval.bw.grf[count,2] <- grf16.a$LocalModelSummary$l.r.OOB
 

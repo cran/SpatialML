@@ -1,12 +1,13 @@
 Package: SpatialML
-Version: 0.1.5
-Date: 2022-09-02
+Version: 0.1.6
+Date: 2023-11-08
 Type: Package
 Title: Spatial Machine Learning
-Author: Stamatis Kalogirou [aut, cre],
-        Stefanos Georganos [aut, ctb]
-Maintainer: Stamatis Kalogirou <stamatis@lctools.science>
-Depends: R (>= 4.1.0), ranger (>= 0.13.1), caret
+Authors@R: c(
+    person("Stamatis", "Kalogirou", email = "stamatis@lctools.science", role = c("aut", "cre")),
+    person("Stefanos", "Georganos", email = "stefanos.georganos@kau.se", role = c("aut", "ctb")))
+Depends: R (>= 4.3.0), ranger (>= 0.15.1), caret (>= 6.0), randomForest
+        (>= 4.7)
 Description: Implements a spatial extension of the random forest algorithm 
              (Georganos et al. (2019) <doi:10.1080/10106049.2019.1595177>).
              Allows for a geographically weighted random forest regression 
@@ -17,6 +18,9 @@ Encoding: UTF-8
 LazyData: true
 URL: http://lctools.science/
 NeedsCompilation: no
-Packaged: 2022-09-01 21:29:15 UTC; Stamatis
+Packaged: 2023-11-07 22:49:45 UTC; Stamatis
+Author: Stamatis Kalogirou [aut, cre],
+  Stefanos Georganos [aut, ctb]
+Maintainer: Stamatis Kalogirou <stamatis@lctools.science>
 Repository: CRAN
-Date/Publication: 2022-09-02 07:20:15 UTC
+Date/Publication: 2023-11-08 00:20:07 UTC

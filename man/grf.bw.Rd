@@ -4,7 +4,7 @@
 \description{This function finds the optimal bandwidth for the Geographically Weighted Random Forest algorithm using an exhaustive approach.}
 \usage{grf.bw(formula, dataset, kernel="adaptive", coords, bw.min = NULL,
               bw.max = NULL, step = 1, trees=500, mtry=NULL, importance="impurity",
-              nthreads = 1, forests = FALSE, weighted = TRUE, ...)}
+              nthreads = 1, forests = FALSE, geo.weighted = TRUE, ...)}
 \arguments{
 
   \item{formula}{the local model to be fitted using the same syntax used in the \code{ranger} function of the R package \code{\link{ranger}}. This is a string that is passed to the sub-models' \code{ranger} function. For more details look at the class \code{\link{formula}}.}
@@ -31,7 +31,7 @@
 
   \item{forests}{a option to save and export (TRUE) or not (FALSE) all the local forests. Default value is FALSE.}
 
-  \item{weighted}{if TRUE the algorithm calculates Geographically Weighted Random Forest using the case.weights option of the package ranger. If FALSE it will calculate local random forests without weighting each observation in the local data set.}
+  \item{geo.weighted}{if TRUE the algorithm calculates Geographically Weighted Random Forest using the case.weights option of the package ranger. If FALSE it will calculate local random forests without weighting each observation in the local data set.}
 
   \item{...}{further arguments passed to the grf and ranger functions}
 

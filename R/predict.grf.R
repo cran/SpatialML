@@ -12,7 +12,6 @@ predict.grf <- function(object, new.data, x.var.name, y.var.name, local.w=1, glo
 
     locations <- object$Locations
 
-    #D <- sqrt((x-locations$X)^2+(y-locations$Y)^2)
     D <- sqrt((x-locations[,1])^2 + (y-locations[,2])^2)
 
     local.model.ID <- which.min(D)
