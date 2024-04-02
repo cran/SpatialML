@@ -34,7 +34,7 @@
 
 Georganos, S. and Kalogirou, S. (2022) A Forest of Forests: A Spatially Weighted and Computationally Efficient Formulation of Geographical Random Forests. ISPRS, International Journal of Geo-Information, 2022, 11, 471. <https://www.mdpi.com/2220-9964/11/9/471>}
 
-\author{Stamatis Kalogirou <stamatis@lctools.science>, Stefanos Georganos <sgeorgan@ulb.ac.be>}
+\author{Stamatis Kalogirou <stamatis.science@gmail.com>, Stefanos Georganos <sgeorgan@ulb.ac.be>}
 
 \note{This function is under development.}
 

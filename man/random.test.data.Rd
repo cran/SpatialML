@@ -19,7 +19,7 @@ random.test.data(nrows = 10, ncols = 10, vars.no = 3, dep.var.dis = "normal",
 
 \value{a dataframe}
 
-\author{Stamatis Kalogirou <stamatis@lctools.science>}
+\author{Stamatis Kalogirou <stamatis.science@gmail.com>}
 
 \examples{
 RDF <- random.test.data(12,12,3)

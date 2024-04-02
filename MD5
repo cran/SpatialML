@@ -1,4 +1,4 @@
-63c408a66b8caf911d70d33da1f950ef *DESCRIPTION
+b18754e97fc41eb296f6dc335b002573 *DESCRIPTION
 45ddcc712503c9f957a34fa02862608d *NAMESPACE
 9f0f9340ec41f53a7379bc11a699e497 *R/grf.R
 337dde360c5fcbf5230120b58cbeeb1f *R/grf.bw.R
@@ -8,8 +8,8 @@ f7127bd35d6fb7a886c8ba5fdc31942f *R/random.test.data.R
 58731a784e7721a6410fcf9a6b9ffac9 *data/Income.rdata
 3fe4fb93b20dc0f99db4a04b7fda15e6 *data/datalist
 4b5bb52a520626f61e926c7ff3ce2a0c *man/Income.Rd
-822dd414efc369959e31504dde2eccd5 *man/grf.Rd
-6f8ccd25d4826f0bc9e51c803094035c *man/grf.bw.Rd
-aea70a81bbb9a88aa35539dcfba19365 *man/predict.grf.Rd
-92b32fc08d4b2215d6e63fcd75c537f2 *man/random.test.data.Rd
-4029f43acd46daaed0c11624d7f96239 *man/rf.mtry.optim.Rd
+91c3cdf41b32ba1850e615f1a10a8ed3 *man/grf.Rd
+116a28a2882c1b4aca99ce918763c6da *man/grf.bw.Rd
+530ff44351b2a228fae9c4ba511c93c7 *man/predict.grf.Rd
+06938780dacd8432957b6a4d4e0f65d5 *man/random.test.data.Rd
+2b8cd5f02542b339d82b0609344f6f13 *man/rf.mtry.optim.Rd

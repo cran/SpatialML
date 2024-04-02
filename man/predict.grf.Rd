@@ -20,7 +20,7 @@
 
 \references{Stefanos Georganos, Tais Grippa, Assane Niang Gadiaga, Catherine Linard, Moritz Lennert, Sabine Vanhuysse, Nicholus Odhiambo Mboga, Eléonore Wolff & Stamatis Kalogirou (2019) Geographical Random Forests: A Spatial Extension of the Random Forest Algorithm to Address Spatial Heterogeneity in Remote Sensing and Population Modelling, Geocarto International, DOI: 10.1080/10106049.2019.1595177}
 
-\author{Stamatis Kalogirou <stamatis@lctools.science>, Stefanos Georganos <sgeorgan@ulb.ac.be>}
+\author{Stamatis Kalogirou <stamatis.science@gmail.com>, Stefanos Georganos <sgeorgan@ulb.ac.be>}
 
 \note{This function is under development. There should be improvements in future versions of the package \code{SpatialML}. Any suggestion is welcome!}
 
