@@ -1,66 +1,93 @@
 \name{predict.grf}
 \alias{predict.grf}
-\title{Predict Method for Geographical Random Forest}
-\description{Prediction of test data using the geographical random forest.}
-
-\usage{\method{predict}{grf}(object, new.data, x.var.name, y.var.name, local.w=1, global.w=0,...)
+\title{Predict Method for a Geographically Weighted Random Forest}
+\description{
+Generates predictions for new observations using a fitted
+\code{\link{grf}} object. For each new observation the local random
+forest fitted at the geographically nearest training location is used.
+The user can blend local and global predictions through the
+\code{local.w} and \code{global.w} weights.
+}
+\usage{
+\method{predict}{grf}(object, new.data, x.var.name, y.var.name,
+                      local.w = 1, global.w = 0, ...)
 }
 \arguments{
-  \item{object}{an object that created by the function grf that includes all local forests.}
-  \item{new.data}{a data frame containing new data.}
-  \item{x.var.name}{the name of the variable with X coordinates.}
-  \item{y.var.name}{the name of the variable with Y coordinates.}
-  \item{local.w}{weight of the local model predictor allowing semi-local predictions. Default value is 1.}
-  \item{global.w}{weight of the global model predictor allowing semi-local predictions. Default value is 0.}
-  \item{...}{for other arguments passed to the generic predict functions. For example you may pass here the number of threats}}
-\details{A Geographical Random Forest prediction on unknown data. The nearest local random forest model in coordinate space is used to predict in each unknown y-variable location.
+  \item{object}{an object of class \code{"grf"} created by
+    \code{\link{grf}} with \code{forests = TRUE}.}
+  \item{new.data}{a data frame containing the predictors required by the
+    model formula and the X and Y coordinates of the new observations.}
+  \item{x.var.name}{the name of the column in \code{new.data} that
+    contains the X coordinate.}
+  \item{y.var.name}{the name of the column in \code{new.data} that
+    contains the Y coordinate.}
+  \item{local.w}{numeric weight applied to the local model prediction.
+    Default is \code{1}.}
+  \item{global.w}{numeric weight applied to the global model prediction.
+    Default is \code{0}.}
+  \item{\dots}{further arguments passed to the \code{ranger}
+    \code{\link[stats]{predict}} method (e.g. \code{num.threads}).}
 }
-
-\value{vector of predicted values}
-
-\references{Stefanos Georganos, Tais Grippa, Assane Niang Gadiaga, Catherine Linard, Moritz Lennert, Sabine Vanhuysse, Nicholus Odhiambo Mboga, Eléonore Wolff & Stamatis Kalogirou (2019) Geographical Random Forests: A Spatial Extension of the Random Forest Algorithm to Address Spatial Heterogeneity in Remote Sensing and Population Modelling, Geocarto International, DOI: 10.1080/10106049.2019.1595177}
-
-\author{Stamatis Kalogirou <stamatis.science@gmail.com>, Stefanos Georganos <sgeorgan@ulb.ac.be>}
-
-\note{This function is under development. There should be improvements in future versions of the package \code{SpatialML}. Any suggestion is welcome!}
-
-\seealso{
-\code{\link{grf}}
+\details{
+For every row \code{i} in \code{new.data} the function computes the
+Euclidean distance between
+\code{(new.data[i, x.var.name], new.data[i, y.var.name])} and every
+training location in \code{object$Locations}, picks the local random
+forest fitted at the nearest training location, and combines its
+prediction with the prediction of the global random forest using the
+weights \code{local.w} and \code{global.w}.
 }
-
+\value{
+A numeric vector of predictions of length \code{nrow(new.data)}.
+}
+\references{
+Georganos, S., Grippa, T., Niang Gadiaga, A., Linard, C., Lennert, M.,
+Vanhuysse, S., Mboga, N., Wolff, E., Kalogirou, S. (2019)
+Geographical Random Forests: A Spatial Extension of the Random Forest
+Algorithm to Address Spatial Heterogeneity in Remote Sensing and
+Population Modelling. \emph{Geocarto International}, \doi{10.1080/10106049.2019.1595177}.
+}
+\author{Stamatis Kalogirou \email{stamatis.science@gmail.com},
+        Stefanos Georganos \email{stefanos.georganos@kau.se}}
+\note{For tutorials, publications and contact information, see the
+package web site.}
+\seealso{\code{\link{grf}}}
 \examples{
-  \dontrun{
-      RDF <- random.test.data(10,10,3)
-      Coords<-RDF[ ,4:5]
-      grf <- grf(dep ~ X1 + X2, dframe=RDF, bw=10,
-                kernel="adaptive", coords=Coords)
-
-      RDF.Test <- random.test.data(2,2,3)
-
-      predict.grf(grf, RDF.Test, x.var.name="X", y.var.name="Y", local.w=1, global.w=0)
-  }
   \donttest{
-      #Load the sample data
-      data(Income)
+    set.seed(1)
+    RDF <- random.test.data(8, 8, 3)
+    Coords <- RDF[, 4:5]
+    m <- grf(dep ~ X1 + X2, dframe = RDF, bw = 12,
+             kernel = "adaptive", coords = Coords,
+             ntree = 100, mtry = 1, nthreads = 1,
+             print.results = FALSE, progress = FALSE)
 
-      #Create the vector of XY coordinates
-      Coords<-Income[,1:2]
+    set.seed(2)
+    RDF.Test <- random.test.data(2, 2, 3)
+    predict(m, RDF.Test, x.var.name = "X", y.var.name = "Y",
+            local.w = 1, global.w = 0)
+  }
+  \dontrun{
+    ## Real-world demonstration on the Greek Income dataset.
+    ## Not run by R CMD check because fitting a full GRF on 325
+    ## municipalities exceeds the few-second example budget.
+    data(Income)
+    Coords <- Income[, 1:2]
 
-      #Fit local model
-      grf <- grf(Income01 ~ UnemrT01 + PrSect01, dframe=Income, bw=60,
-                kernel="adaptive", coords=Coords)
+    m <- grf(Income01 ~ UnemrT01 + PrSect01, dframe = Income, bw = 60,
+             kernel = "adaptive", coords = Coords)
 
-      #Create New Random Data - XY coordinates inside the sample data map extend
-      x<-runif(20, min = 142498, max = 1001578)
-      y<-runif(20, min = 3855768, max = 4606754)
-      u<-runif(20, min = 5, max = 50)
-      p<-runif(20, min = 0, max = 100)
-      f<-runif(20, min = 2, max = 30)
-      df2<-data.frame(X=x, Y= y,  UnemrT01=u,  PrSect01=p,  Foreig01=f)
+    set.seed(123)
+    x <- runif(20, min = 142498, max = 1001578)
+    y <- runif(20, min = 3855768, max = 4606754)
+    u <- runif(20, min = 5,      max = 50)
+    p <- runif(20, min = 0,      max = 100)
+    f <- runif(20, min = 2,      max = 30)
+    df2 <- data.frame(X = x, Y = y, UnemrT01 = u, PrSect01 = p, Foreig01 = f)
 
-      #Make predictions using the local model
-      predict.grf(grf, df2, x.var.name="X", y.var.name="Y", local.w=1, global.w=0)
+    predict(m, df2, x.var.name = "X", y.var.name = "Y",
+            local.w = 1, global.w = 0)
   }
 }
-
-\keyword{local random forest}
+\keyword{spatial}
+\keyword{models}

@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<meta name="generator" content="litedown 0.9">
+<title>Geographically Weighted Random Forest with SpatialML</title>
+<style type="text/css">
+body {
+  font-family: sans-serif;
+  max-width: 800px;
+  margin: auto;
+  padding: 1em;
+  line-height: 1.5;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+body, .abstract, code, .footnotes, footer, #refs, .caption { font-size: .9em; }
+li li { font-size: .95em; }
+ul:has(li > input[type="checkbox"]) { list-style: none; padding-left: 1em; }
+*, :before, :after { box-sizing: border-box; }
+a { color: steelblue; }
+pre, img { max-width: 100%; }
+pre { white-space: pre-wrap; word-break: break-word; }
+pre code { display: block; padding: 1em; overflow-x: auto; }
+code { font-family: 'DejaVu Sans Mono', 'Droid Sans Mono', 'Lucida Console', Consolas, Monaco, monospace; }
+:not(pre, th) > code, code[class], div > .caption { background: #f8f8f8; }
+pre > code:is(:not([class]), .language-plain, .language-none, .plain), .box, .figure, .table { background: inherit; border: 1px solid #eee; }
+pre > code {
+  &.message { border-color: #9eeaf9; }
+  &.warning { background: #fff3cd; border-color: #fff3cd; }
+  &.error { background: #f8d7da; border-color: #f8d7da; }
+}
+.fenced-chunk { border-left: 1px solid #666; }
+.code-fence {
+  opacity: .4;
+  border: 1px dashed #666;
+  border-left: 2px solid;
+  &:hover { opacity: inherit; }
+}
+.box, .figure, .table, table { margin: 1em auto; }
+div > .caption { padding: 1px 1em; }
+.figure { p:has(img, svg), pre:has(svg) { text-align: center; } }
+.flex-col { display: flex; justify-content: space-between; }
+table {
+  &:only-child:not(.table > *) { margin: auto; }
+  th, td { padding: 5px; font-variant-numeric: tabular-nums; }
+  thead, tfoot, tr:nth-child(even) { background: whitesmoke; }
+  thead th { border-bottom: 1px solid #ddd; }
+  &:not(.datatable-table) {
+    border-top: 1px solid #666;
+    border-bottom: 1px solid #666;
+  }
+}
+blockquote {
+  color: #666;
+  margin: 0;
+  padding: 1px 1em;
+  border-left: .5em solid #eee;
+}
+hr, .footnotes::before { border: 1px dashed #ddd; }
+.frontmatter { text-align: center; }
+#TOC {
+  a { text-decoration: none; }
+  ul { list-style: none; padding-left: 1em; }
+  & > ul { padding: 0; }
+  ul ul { border-left: 1px solid lightsteelblue; }
+}
+.body h2 { border-bottom: 1px solid #666; }
+.body .appendix, .appendix ~ h2 { border-bottom-style: dashed; }
+.main-number::after { content: "."; }
+span[class^="ref-number-"] { font-weight: bold; }
+.ref-number-fig::after, .ref-number-tab::after { content: ":"; }
+.cross-ref-chp::before { content: "Chapter "; }
+.cross-ref-sec::before { content: "Section "; }
+.cross-ref-fig::before, .ref-number-fig::before { content: "Figure "; }
+.cross-ref-tab::before, .ref-number-tab::before { content: "Table "; }
+.cross-ref-eqn::before, .MathJax_ref:has(mjx-mtext > mjx-c + mjx-c)::before { content: "Equation "; }
+.abstract, #refs {
+  &::before { display: block; margin: 1em auto; font-weight: bold; }
+}
+.abstract::before { content: "Abstract"; text-align: center; }
+#refs::before { content: "Bibliography"; font-size: 1.5em; }
+.ref-paren-open::before { content: "("; }
+.ref-paren-close::after { content: ")"; }
+.ref-semicolon::after { content: "; "; }
+.ref-and::after { content: " and "; }
+.ref-et-al::after { content: " et al."; font-style: italic; }
+.footnote-ref a {
+  &::before { content: "["; }
+  &::after { content: "]"; }
+}
+section.footnotes {
+  margin-top: 2em;
+  &::before { content: ""; display: block; max-width: 20em; }
+}
+.fade {
+  background: repeating-linear-gradient(135deg, white, white 30px, #ddd 32px, #ddd 32px);
+  opacity: 0.6;
+}
+
+@media print {
+  body { max-width: 100%; }
+  tr, img { break-inside: avoid; }
+}
+@media only screen and (min-width: 992px) {
+  body:not(.pagesjs) pre:has(.line-numbers):not(:hover) { white-space: pre; }
+}
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.45/dist/katex.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.35/css/prism-xcode.min.css">
+</head>
+<body>
+<div class="frontmatter">
+<div class="title"><h1>Geographically Weighted Random Forest with SpatialML</h1></div>
+<div class="author"><h2>Stamatis Kalogirou and Stefanos Georganos</h2></div>
+<div class="date"><h3>Ιούλιος 06, 2026</h3></div>
+</div>
+<div class="body">
+<h2 id="sec:1-introduction">1. Introduction</h2>
+<p><strong>Geographically Weighted Random Forest (GRF)</strong> is a spatial extension of
+the Random Forest algorithm. It was introduced by Georganos <em>et al.</em>
+(2019) and refined in Georganos and Kalogirou (2022). For each
+observation <em>i</em> the algorithm fits a <em>local</em> Random Forest using only
+the observations that fall in the neighbourhood of <em>i</em> (defined by the
+<em>k</em> nearest neighbours when the kernel is <em>adaptive</em>, or by all the
+observations within a distance <em>bw</em> when the kernel is <em>fixed</em>). When
+<code>geo.weighted = TRUE</code>, observations within the neighbourhood are
+weighted by the bi-square kernel
+$$
+w_{ij} ;=; \left(1 - (d_{ij}/h)^{2}\right)^{2},
+$$
+where \(d_{ij}\) is the Euclidean distance between observations <em>i</em> and
+<em>j</em> and \(h\) is the largest distance retained in the neighbourhood. The
+final model is the collection of all local random forests plus a global
+random forest fitted on the whole sample.</p>
+<p>The package exports four user-facing functions:</p>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>grf()</code></td>
+<td>Fit a Geographically Weighted Random Forest</td>
+</tr>
+<tr>
+<td><code>grf.bw()</code></td>
+<td>Search the optimal bandwidth</td>
+</tr>
+<tr>
+<td><code>predict.grf()</code></td>
+<td>Predict at new spatial locations (via S3 <code>predict()</code>)</td>
+</tr>
+<tr>
+<td><code>rf.mtry.optim()</code></td>
+<td>Tune the global <code>mtry</code> parameter (OOB or k-fold CV)</td>
+</tr>
+<tr>
+<td><code>random.test.data()</code></td>
+<td>Generate small synthetic spatial data for testing</td>
+</tr>
+</tbody>
+</table>
+<p>The package uses <strong>ranger</strong> as its random-forest back-end. Undefined local
+out-of-bag predictions are handled with a quiet leave-one-out fallback.</p>
+<pre><code class="language-r">library(SpatialML)
+</code></pre>
+<h2 id="sec:2-quick-start-with-synthetic-data">2. Quick start with synthetic data</h2>
+<p>We start with a small synthetic dataset created on a regular 8 x 8 grid.
+<code>random.test.data()</code> returns one dependent variable (<code>dep</code>), two random
+predictors (<code>X1</code>, <code>X2</code>) and the grid coordinates (<code>X</code>, <code>Y</code>).</p>
+<pre><code class="language-r">set.seed(42)
+df &lt;- random.test.data(nrows = 8, ncols = 8, vars.no = 3)
+head(df)
+#&gt;          dep        X1         X2 X Y
+#&gt; 1  1.3709584 0.2335235 0.12887216 1 1
+#&gt; 2 -0.5646982 0.7244976 0.12908928 1 2
+#&gt; 3  0.3631284 0.9036345 0.07225311 1 3
+#&gt; 4  0.6328626 0.6034741 0.05312948 1 4
+#&gt; 5  0.4042683 0.6315073 0.53187444 1 5
+#&gt; 6 -0.1061245 0.9373858 0.11230824 1 6
+</code></pre>
+<h3 id="sec:2-1-tuning-mtry-globally">2.1 Tuning <code>mtry</code> globally</h3>
+<p>Before fitting the GRF we tune the <code>mtry</code> parameter on the <strong>global</strong>
+data. Out-of-bag error (the default) is fast and statistically valid for
+Random Forests.</p>
+<pre><code class="language-r">set.seed(1)
+mtry.opt &lt;- rf.mtry.optim(dep ~ X1 + X2, dataset = df,
+                          cv.method = &quot;oob&quot;, plot.it = FALSE,
+                          verbose = FALSE)
+mtry.opt$best.mtry
+#&gt; [1] 1
+mtry.opt$results
+#&gt;   mtry     RMSE    Rsquared SDRMSE SDRsq
+#&gt; 1    1 1.176771 -0.08096882     NA    NA
+#&gt; 2    2 1.214827 -0.15201429     NA    NA
+</code></pre>
+<p>Use <code>cv.method = &quot;repeatedcv&quot;</code> for a more rigorous evaluation when the
+sample is small.</p>
+<h3 id="sec:2-2-optimal-bandwidth">2.2 Optimal bandwidth</h3>
+<p><code>grf.bw()</code> evaluates a grid of candidate bandwidths and returns the one
+that maximises the local OOB R-squared.</p>
+<pre><code class="language-r">set.seed(1)
+bw.search &lt;- grf.bw(dep ~ X1 + X2, dataset = df, kernel = &quot;adaptive&quot;,
+                    coords = df[, c(&quot;X&quot;, &quot;Y&quot;)],
+                    bw.min = 8, bw.max = 18, step = 2,
+                    trees = 200, mtry = mtry.opt$best.mtry,
+                    verbose = FALSE)
+</code></pre>
+<pre><code class="language-r">bw.search$tested.bandwidths
+#&gt;   Bandwidth      Local       Mixed   Low.Local
+#&gt; 1         8 -0.4114707 0.002040161 0.009830132
+#&gt; 2        10 -0.4996148 0.001290432 0.011996755
+#&gt; 3        12 -0.2739078 0.024000771 0.023387175
+#&gt; 4        14 -0.2203878 0.028195146 0.027563047
+#&gt; 5        16 -0.2343679 0.015383208 0.020700446
+#&gt; 6        18 -0.1874398 0.025608808 0.032172885
+bw.search$Best.BW
+#&gt; [1] 18
+</code></pre>
+<h3 id="sec:2-3-fitting-the-grf">2.3 Fitting the GRF</h3>
+<p>With both <code>mtry</code> and the bandwidth chosen we fit the final model. The
+<code>forests = TRUE</code> argument is required if you want to call <code>predict()</code>
+later on new data.</p>
+<pre><code class="language-r">set.seed(1)
+m &lt;- grf(dep ~ X1 + X2, dframe = df, bw = bw.search$Best.BW,
+         kernel = &quot;adaptive&quot;, coords = df[, c(&quot;X&quot;, &quot;Y&quot;)],
+         ntree = 200, mtry = mtry.opt$best.mtry,
+         forests = TRUE, print.results = FALSE, progress = FALSE)
+</code></pre>
+<h3 id="sec:2-4-inspecting-the-fit">2.4 Inspecting the fit</h3>
+<p>The fitted object is an S3 object of class <code>&quot;grf&quot;</code>. Useful slots:</p>
+<pre><code class="language-r">class(m)
+#&gt; [1] &quot;grf&quot;
+m$LocalModelSummary$l.r.OOB              # local OOB R-squared
+#&gt; [1] -0.3795875
+summary(m$LGofFit$LM_ResOOB)             # local OOB residuals
+#&gt;    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#&gt; -4.3458 -0.5309  0.1373  0.1017  1.0240  3.1554
+head(m$Local.Variable.Importance)        # local importance per observation
+#&gt;          X1        X2
+#&gt; 1 12.175976 15.507384
+#&gt; 2 13.318965 13.472106
+#&gt; 3 10.623393 10.898932
+#&gt; 4 10.081469  8.279829
+#&gt; 5  8.818826  7.961262
+#&gt; 6  6.776464  6.550084
+</code></pre>
+<p>The columns of <code>m$Local.Variable.Importance</code> are the predictors and the
+rows correspond, in order, to the observations of <code>dframe</code>. To explore
+the spatial pattern you can map them with any plotting framework you
+like:</p>
+<pre><code class="language-r">imp &lt;- m$Local.Variable.Importance$X1
+plot(df$X, df$Y, pch = 19, cex = 2,
+     col = grDevices::grey(1 - imp / max(imp)),
+     xlab = &quot;X&quot;, ylab = &quot;Y&quot;,
+     main = &quot;Local importance of X1 (darker = more important)&quot;)
+</code></pre>
+<div class="figure">
+<img src="data:image/png;base64,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" alt="Local importance of predictor X1 across the synthetic 8 x 8 grid."  />
+<p class="caption">plot of chunk unnamed-chunk-8</p>
+</div>
+<h3 id="sec:2-5-predicting-at-new-locations">2.5 Predicting at new locations</h3>
+<p><code>predict()</code> dispatches to <code>predict.grf()</code> because <code>m</code> has class
+<code>&quot;grf&quot;</code>. For each new observation the local random forest fitted at the
+geographically nearest training location is used.</p>
+<pre><code class="language-r">new.df &lt;- random.test.data(2, 2, vars.no = 3)
+predict(m, new.df, x.var.name = &quot;X&quot;, y.var.name = &quot;Y&quot;)
+#&gt; [1] -0.2474032 -0.0510753  1.0622908  0.5590549
+</code></pre>
+<p>By default the global random forest receives weight zero
+(<code>global.w = 0</code>). Setting <code>global.w</code> and <code>local.w</code> to non-zero values
+returns a linear blend of the two predictions and is a useful sensitivity
+test when the local model is noisy.</p>
+<pre><code class="language-r">predict(m, new.df, x.var.name = &quot;X&quot;, y.var.name = &quot;Y&quot;,
+        local.w = 0.5, global.w = 0.5)
+#&gt; [1] -0.2635139 -0.4262487  0.7139588  0.5709697
+</code></pre>
+<h2 id="sec:3-real-world-example-greek-municipal-income">3. Real-world example: Greek municipal income</h2>
+<p>The <code>Income</code> dataset (shipped with the package) contains 325
+municipalities of Greece with their centroid coordinates and four
+socio-economic variables. Fitting a full GRF on this data is heavier
+than the toy example above; the chunk below is therefore not evaluated
+inside the vignette but copy-paste it into an interactive session.</p>
+<pre><code class="language-r">data(Income)
+Coords &lt;- Income[, 1:2]
+
+# 1. Search the optimal bandwidth (be patient)
+bw &lt;- grf.bw(Income01 ~ UnemrT01 + PrSect01,
+             dataset = Income, kernel = &quot;adaptive&quot;,
+             coords = Coords, bw.min = 30, bw.max = 80, step = 5)
+
+# 2. Fit the final model
+m &lt;- grf(Income01 ~ UnemrT01 + PrSect01, dframe = Income,
+         bw = bw$Best.BW, kernel = &quot;adaptive&quot;, coords = Coords)
+
+# 3. Local R-squared
+m$LocalModelSummary$l.r.OOB
+
+# 4. Map the residuals
+plot(Coords[, 1], Coords[, 2], pch = 19,
+     col = ifelse(m$LGofFit$LM_ResOOB &gt; 0, &quot;red&quot;, &quot;blue&quot;),
+     xlab = &quot;X&quot;, ylab = &quot;Y&quot;, main = &quot;GRF OOB residuals&quot;)
+</code></pre>
+<h2 id="sec:4-practical-tips">4. Practical tips</h2>
+<ul>
+<li><strong>Bandwidth.</strong> A <em>small</em> bandwidth privileges local detail (and risks
+high variance); a <em>large</em> bandwidth approaches the global Random
+Forest. Plot the columns of <code>bw.search$tested.bandwidths</code> to inspect
+the trade-off.</li>
+<li><strong><code>forests = FALSE</code>.</strong> If you only need diagnostics and not prediction
+on new points, set <code>forests = FALSE</code>. The output object is then much
+smaller (only one ranger object is kept, the global one).</li>
+<li><strong><code>geo.weighted = FALSE</code>.</strong> Disables the bi-square case weights but
+keeps the local sub-sampling. Useful for ablation studies.</li>
+<li><strong>Reproducibility.</strong> All randomness is delegated to <code>ranger</code>. Call
+<code>set.seed()</code> before any of the package functions (the package itself
+does not call <code>set.seed()</code>).</li>
+</ul>
+<p>For tutorials, related publications and contact details visit the
+maintainer’s website at <a href="https://stamatisgeoai.eu/">https://stamatisgeoai.eu/</a>.</p>
+<h2 id="sec:references">References</h2>
+<p>Georganos, S., Grippa, T., Niang Gadiaga, A., Linard, C., Lennert, M.,
+Vanhuysse, S., Mboga, N., Wolff, E. and Kalogirou, S. (2019)
+Geographical Random Forests: A Spatial Extension of the Random Forest
+Algorithm to Address Spatial Heterogeneity in Remote Sensing and
+Population Modelling. <em>Geocarto International</em>. DOI:
+<a href="https://doi.org/10.1080/10106049.2019.1595177">10.1080/10106049.2019.1595177</a>.</p>
+<p>Georganos, S. and Kalogirou, S. (2022) A Forest of Forests: A Spatially
+Weighted and Computationally Efficient Formulation of Geographical
+Random Forests. <em>ISPRS International Journal of Geo-Information</em>,
+11(9), 471. DOI:
+<a href="https://doi.org/10.3390/ijgi11090471">10.3390/ijgi11090471</a>.</p>
+<p>Wright, M. N. and Ziegler, A. (2017) ranger: A Fast Implementation of
+Random Forests for High Dimensional Data in C++ and R. <em>Journal of
+Statistical Software</em>, 77(1), 1-17. DOI:
+<a href="https://doi.org/10.18637/jss.v077.i01">10.18637/jss.v077.i01</a>.</p>
+</div>
+<script src="https://cdn.jsdelivr.net/combine/npm/katex@0.16.45/dist/katex.min.js,npm/katex@0.16.45/dist/contrib/auto-render.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@xiee/utils@1.14.35/js/render-katex.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js" defer></script>
+</body>
+</html>

@@ -1,6 +1,12 @@
-exportPattern("^[[:alpha:]]+")
-importFrom("ranger", ranger)
-importFrom("caret", postResample, trainControl, train)
-importFrom("stats", "dist", "predict", "sd", "setNames", "terms", "rpois", "runif")
-import(randomForest)
+export(grf)
+export(grf.bw)
+export(random.test.data)
+export(rf.mtry.optim)
+
 S3method(predict, grf)
+
+importFrom("ranger", "ranger")
+importFrom("stats", "cor", "dist", "formula", "predict", "sd", "setNames",
+           "terms", "rnorm", "rpois", "runif")
+importFrom("graphics", "abline", "par", "plot")
+importFrom("utils", "setTxtProgressBar", "txtProgressBar")

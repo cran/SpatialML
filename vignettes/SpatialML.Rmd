@@ -1,0 +1,233 @@
+---
+title: "Geographically Weighted Random Forest with SpatialML"
+author: "Stamatis Kalogirou and Stefanos Georganos"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+output: markdown::html_format
+vignette: >
+  %\VignetteIndexEntry{Geographically Weighted Random Forest with SpatialML}
+  %\VignetteEngine{knitr::knitr}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment  = "#>",
+  fig.width  = 6,
+  fig.height = 4,
+  warning  = FALSE,
+  message  = FALSE
+)
+```
+
+## 1. Introduction
+
+**Geographically Weighted Random Forest (GRF)** is a spatial extension of
+the Random Forest algorithm. It was introduced by Georganos *et al.*
+(2019) and refined in Georganos and Kalogirou (2022). For each
+observation *i* the algorithm fits a *local* Random Forest using only
+the observations that fall in the neighbourhood of *i* (defined by the
+*k* nearest neighbours when the kernel is *adaptive*, or by all the
+observations within a distance *bw* when the kernel is *fixed*). When
+`geo.weighted = TRUE`, observations within the neighbourhood are
+weighted by the bi-square kernel
+$$
+w_{ij} \;=\; \left(1 - (d_{ij}/h)^{2}\right)^{2},
+$$
+where $d_{ij}$ is the Euclidean distance between observations *i* and
+*j* and $h$ is the largest distance retained in the neighbourhood. The
+final model is the collection of all local random forests plus a global
+random forest fitted on the whole sample.
+
+The package exports four user-facing functions:
+
+| Function            | Purpose                                                  |
+|---------------------|----------------------------------------------------------|
+| `grf()`             | Fit a Geographically Weighted Random Forest              |
+| `grf.bw()`          | Search the optimal bandwidth                             |
+| `predict.grf()`     | Predict at new spatial locations (via S3 `predict()`)    |
+| `rf.mtry.optim()`   | Tune the global `mtry` parameter (OOB or k-fold CV)      |
+| `random.test.data()`| Generate small synthetic spatial data for testing        |
+
+The package uses **ranger** as its random-forest back-end. Undefined local
+out-of-bag predictions are handled with a quiet leave-one-out fallback.
+
+```{r}
+library(SpatialML)
+```
+
+## 2. Quick start with synthetic data
+
+We start with a small synthetic dataset created on a regular 8 x 8 grid.
+`random.test.data()` returns one dependent variable (`dep`), two random
+predictors (`X1`, `X2`) and the grid coordinates (`X`, `Y`).
+
+```{r}
+set.seed(42)
+df <- random.test.data(nrows = 8, ncols = 8, vars.no = 3)
+head(df)
+```
+
+### 2.1 Tuning `mtry` globally
+
+Before fitting the GRF we tune the `mtry` parameter on the **global**
+data. Out-of-bag error (the default) is fast and statistically valid for
+Random Forests.
+
+```{r}
+set.seed(1)
+mtry.opt <- rf.mtry.optim(dep ~ X1 + X2, dataset = df,
+                          cv.method = "oob", plot.it = FALSE,
+                          verbose = FALSE)
+mtry.opt$best.mtry
+mtry.opt$results
+```
+
+Use `cv.method = "repeatedcv"` for a more rigorous evaluation when the
+sample is small.
+
+### 2.2 Optimal bandwidth
+
+`grf.bw()` evaluates a grid of candidate bandwidths and returns the one
+that maximises the local OOB R-squared.
+
+```{r, results = "hide"}
+set.seed(1)
+bw.search <- grf.bw(dep ~ X1 + X2, dataset = df, kernel = "adaptive",
+                    coords = df[, c("X", "Y")],
+                    bw.min = 8, bw.max = 18, step = 2,
+                    trees = 200, mtry = mtry.opt$best.mtry,
+                    verbose = FALSE)
+```
+
+```{r}
+bw.search$tested.bandwidths
+bw.search$Best.BW
+```
+
+### 2.3 Fitting the GRF
+
+With both `mtry` and the bandwidth chosen we fit the final model. The
+`forests = TRUE` argument is required if you want to call `predict()`
+later on new data.
+
+```{r, results = "hide"}
+set.seed(1)
+m <- grf(dep ~ X1 + X2, dframe = df, bw = bw.search$Best.BW,
+         kernel = "adaptive", coords = df[, c("X", "Y")],
+         ntree = 200, mtry = mtry.opt$best.mtry,
+         forests = TRUE, print.results = FALSE, progress = FALSE)
+```
+
+### 2.4 Inspecting the fit
+
+The fitted object is an S3 object of class `"grf"`. Useful slots:
+
+```{r}
+class(m)
+m$LocalModelSummary$l.r.OOB              # local OOB R-squared
+summary(m$LGofFit$LM_ResOOB)             # local OOB residuals
+head(m$Local.Variable.Importance)        # local importance per observation
+```
+
+The columns of `m$Local.Variable.Importance` are the predictors and the
+rows correspond, in order, to the observations of `dframe`. To explore
+the spatial pattern you can map them with any plotting framework you
+like:
+
+```{r, fig.alt = "Local importance of predictor X1 across the synthetic 8 x 8 grid."}
+imp <- m$Local.Variable.Importance$X1
+plot(df$X, df$Y, pch = 19, cex = 2,
+     col = grDevices::grey(1 - imp / max(imp)),
+     xlab = "X", ylab = "Y",
+     main = "Local importance of X1 (darker = more important)")
+```
+
+### 2.5 Predicting at new locations
+
+`predict()` dispatches to `predict.grf()` because `m` has class
+`"grf"`. For each new observation the local random forest fitted at the
+geographically nearest training location is used.
+
+```{r}
+new.df <- random.test.data(2, 2, vars.no = 3)
+predict(m, new.df, x.var.name = "X", y.var.name = "Y")
+```
+
+By default the global random forest receives weight zero
+(`global.w = 0`). Setting `global.w` and `local.w` to non-zero values
+returns a linear blend of the two predictions and is a useful sensitivity
+test when the local model is noisy.
+
+```{r}
+predict(m, new.df, x.var.name = "X", y.var.name = "Y",
+        local.w = 0.5, global.w = 0.5)
+```
+
+## 3. Real-world example: Greek municipal income
+
+The `Income` dataset (shipped with the package) contains 325
+municipalities of Greece with their centroid coordinates and four
+socio-economic variables. Fitting a full GRF on this data is heavier
+than the toy example above; the chunk below is therefore not evaluated
+inside the vignette but copy-paste it into an interactive session.
+
+```{r, eval = FALSE}
+data(Income)
+Coords <- Income[, 1:2]
+
+# 1. Search the optimal bandwidth (be patient)
+bw <- grf.bw(Income01 ~ UnemrT01 + PrSect01,
+             dataset = Income, kernel = "adaptive",
+             coords = Coords, bw.min = 30, bw.max = 80, step = 5)
+
+# 2. Fit the final model
+m <- grf(Income01 ~ UnemrT01 + PrSect01, dframe = Income,
+         bw = bw$Best.BW, kernel = "adaptive", coords = Coords)
+
+# 3. Local R-squared
+m$LocalModelSummary$l.r.OOB
+
+# 4. Map the residuals
+plot(Coords[, 1], Coords[, 2], pch = 19,
+     col = ifelse(m$LGofFit$LM_ResOOB > 0, "red", "blue"),
+     xlab = "X", ylab = "Y", main = "GRF OOB residuals")
+```
+
+## 4. Practical tips
+
+- **Bandwidth.** A *small* bandwidth privileges local detail (and risks
+  high variance); a *large* bandwidth approaches the global Random
+  Forest. Plot the columns of `bw.search$tested.bandwidths` to inspect
+  the trade-off.
+- **`forests = FALSE`.** If you only need diagnostics and not prediction
+  on new points, set `forests = FALSE`. The output object is then much
+  smaller (only one ranger object is kept, the global one).
+- **`geo.weighted = FALSE`.** Disables the bi-square case weights but
+  keeps the local sub-sampling. Useful for ablation studies.
+- **Reproducibility.** All randomness is delegated to `ranger`. Call
+  `set.seed()` before any of the package functions (the package itself
+  does not call `set.seed()`).
+
+For tutorials, related publications and contact details visit the
+maintainer's website at <https://stamatisgeoai.eu/>.
+
+## References
+
+Georganos, S., Grippa, T., Niang Gadiaga, A., Linard, C., Lennert, M.,
+Vanhuysse, S., Mboga, N., Wolff, E. and Kalogirou, S. (2019)
+Geographical Random Forests: A Spatial Extension of the Random Forest
+Algorithm to Address Spatial Heterogeneity in Remote Sensing and
+Population Modelling. *Geocarto International*. DOI:
+[10.1080/10106049.2019.1595177](https://doi.org/10.1080/10106049.2019.1595177).
+
+Georganos, S. and Kalogirou, S. (2022) A Forest of Forests: A Spatially
+Weighted and Computationally Efficient Formulation of Geographical
+Random Forests. *ISPRS International Journal of Geo-Information*,
+11(9), 471. DOI:
+[10.3390/ijgi11090471](https://doi.org/10.3390/ijgi11090471).
+
+Wright, M. N. and Ziegler, A. (2017) ranger: A Fast Implementation of
+Random Forests for High Dimensional Data in C++ and R. *Journal of
+Statistical Software*, 77(1), 1-17. DOI:
+[10.18637/jss.v077.i01](https://doi.org/10.18637/jss.v077.i01).

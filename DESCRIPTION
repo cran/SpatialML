@@ -1,26 +1,39 @@
 Package: SpatialML
-Version: 0.1.7
-Date: 2024-04-02
 Type: Package
 Title: Spatial Machine Learning
+Version: 1.8.2
+Date: 2026-07-06
 Authors@R: c(
-    person("Stamatis", "Kalogirou", email = "stamatis.science@gmail.com", role = c("aut", "cre")),
-    person("Stefanos", "Georganos", email = "stefanos.georganos@kau.se", role = c("aut", "ctb")))
-Depends: R (>= 4.3.0), ranger (>= 0.15.1), caret (>= 6.0), randomForest
-        (>= 4.7)
-Description: Implements a spatial extension of the random forest algorithm 
-             (Georganos et al. (2019) <doi:10.1080/10106049.2019.1595177>).
-             Allows for a geographically weighted random forest regression 
-             including a function to find the optical bandwidth. (Georganos 
-             and Kalogirou (2022) <https://www.mdpi.com/2220-9964/11/9/471>).
+    person("Stamatis", "Kalogirou",
+           email = "stamatis.science@gmail.com",
+           role = c("aut", "cre", "cph"),
+           comment = c(ORCID = "0000-0003-1949-6248")),
+    person("Stefanos", "Georganos",
+           email = "stefanos.georganos@kau.se",
+           role = "aut"))
+Description: Implements a spatial extension of the random forest algorithm
+    (Georganos et al. (2019) <doi:10.1080/10106049.2019.1595177>). Provides
+    a Geographically Weighted Random Forest regression and a routine to
+    find the optimal bandwidth (Georganos and Kalogirou (2022)
+    <doi:10.3390/ijgi11090471>). A lightweight cross-validation helper for
+    tuning the 'mtry' parameter of a random forest and a generator of
+    synthetic spatial test data are also included. The package depends on
+    'ranger' as its single random-forest back-end.
 License: GPL (>= 2)
 Encoding: UTF-8
+Language: en-GB
 LazyData: true
+Depends: R (>= 4.1.0)
+Imports: ranger (>= 0.15.1), stats, graphics, utils
+Suggests: knitr, markdown, testthat (>= 3.0.0)
+VignetteBuilder: knitr
+Config/testthat/edition: 3
 URL: https://stamatisgeoai.eu/
 NeedsCompilation: no
-Packaged: 2024-04-01 23:20:42 UTC; Stamatis
-Author: Stamatis Kalogirou [aut, cre],
-  Stefanos Georganos [aut, ctb]
+Packaged: 2026-07-06 07:28:11 UTC; Stamatis
+Author: Stamatis Kalogirou [aut, cre, cph] (ORCID:
+    <https://orcid.org/0000-0003-1949-6248>),
+  Stefanos Georganos [aut]
 Maintainer: Stamatis Kalogirou <stamatis.science@gmail.com>
 Repository: CRAN
-Date/Publication: 2024-04-02 00:00:02 UTC
+Date/Publication: 2026-07-06 09:40:09 UTC

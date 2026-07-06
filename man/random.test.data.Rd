@@ -1,27 +1,48 @@
 \name{random.test.data}
 \alias{random.test.data}
-\title{Radmom data generator}
+\title{Random Data Generator}
 \description{
-Generates datasets with random data for modelling including a dependent variable, independent variables and X,Y coordinates.
+Generates a synthetic data set composed of one dependent variable, a
+number of independent variables drawn from \code{Uniform(0, 1)}, and
+optionally the X and Y coordinates of a regular \code{nrows} x
+\code{ncols} grid. Useful for examples, unit testing and small
+simulation studies.
 }
 \usage{
-random.test.data(nrows = 10, ncols = 10, vars.no = 3, dep.var.dis = "normal",
-                xycoords = TRUE)
+random.test.data(nrows = 10, ncols = 10, vars.no = 3,
+                 dep.var.dis = c("normal", "poisson"),
+                 xycoords = TRUE)
 }
 \arguments{
-  \item{nrows}{an integer referring to the number of rows for a regular grid}
-  \item{ncols}{an integer referring to the number of columns for a regular grid}
-  \item{vars.no}{an integer referring to the number of independent variables}
-  \item{dep.var.dis}{a character referring to the distribution of the dependent variable. Options are "normal" (default) and "poisson"}
-  \item{xycoords}{a logical value indicating whether X,Y coordinates will be created (default) or not.}
+  \item{nrows}{integer; number of rows of the regular grid. Default
+    \code{10}.}
+  \item{ncols}{integer; number of columns of the regular grid. Default
+    \code{10}.}
+  \item{vars.no}{integer; total number of model variables (1 dependent
+    plus \code{vars.no - 1} independent). Must be at least \code{2}.}
+  \item{dep.var.dis}{distribution of the dependent variable. One of
+    \code{"normal"} (default, drawn from \code{rnorm()}) or
+    \code{"poisson"} (drawn from \code{rpois()} with \code{lambda = 7}).}
+  \item{xycoords}{logical; if \code{TRUE} (default) two columns \code{X}
+    and \code{Y} containing the grid coordinates are appended.}
 }
-\details{The creation of a random dataset was necessary here to provide examples to some functions. However, random datasets may be used in simulation studies.}
+\details{
+The function is mostly intended to provide reproducible toy data for
+the package examples. The independent variables are named
+\code{X1, X2, \dots, X(vars.no - 1)}.
 
-\value{a dataframe}
-
-\author{Stamatis Kalogirou <stamatis.science@gmail.com>}
-
+For reproducible results call \code{set.seed()} before
+\code{random.test.data()}.
+}
+\value{
+A data frame with \code{nrows * ncols} rows containing one column
+\code{dep}, \code{vars.no - 1} columns named \code{X1, X2, ...} and,
+when \code{xycoords = TRUE}, two extra columns \code{X} and \code{Y}.
+}
+\author{Stamatis Kalogirou \email{stamatis.science@gmail.com}}
 \examples{
-RDF <- random.test.data(12,12,3)
+set.seed(1)
+RDF <- random.test.data(12, 12, 3)
+head(RDF)
 }
-\keyword{random data}
+\keyword{datagen}
